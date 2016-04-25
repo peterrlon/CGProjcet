@@ -23,12 +23,11 @@ Specification : display a hierarchical object with 3 parts : Robotic hand exampl
 //////////////////////////////////////////////////////////////////
 
 
-#define PI			3.141592654  // Prime
 #define WIN_POSX    400
 #define WIN_POSY    400
 #define WIN_WIDTH   400
 #define WIN_HEIGHT  300
-#define GRIDSIZE 17
+#define GRIDSIZE 5
 #define GL_CLAMP_TO_EDGE 0x812F
 /* Global Declarations */
 #define IW	808				// Image Width    
@@ -49,8 +48,7 @@ unsigned char InputImage[IW][IH][4];
 unsigned char Skin[IW][IH][4];
 double theta;			 // rotation angles of robot, lower-and-upper arm, upper arm respectivley
 GLUquadric *skin;
-GLfloat ambientLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-//GLfloat diffuseLight[] = { 0.3f,0.3f, 0.3f, 1.0f };
+GLfloat ambientLight[] = { 0.8f, 0.8f, 0.8f, 1.0f };
 GLfloat specularLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 GLfloat initLightPos[] = { 200.0f, 80.0f, 200.0f, 1.0f };
 GLfloat materialSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -58,58 +56,6 @@ GLfloat materialEmission[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 GLfloat materialDiffse[] = { 0.7f, 0.7f, 0.7f, 1.0f };
 GLfloat newLightPos[4];
 GLfloat newLightAngle = 0.0;
-
-
-//void draw_base(void)
-//// draw base : blue cylinder of radius 30 height 40  x-z as base
-//{
-//	glPushMatrix();
-//
-//
-//	GLUquadricObj *pObj1, *pObj2, *pObj3;
-//
-//	glColor3f(0.0, 0.0, 1.0);
-//	glRotatef(-90.0, 1.0, 0.0, 0.0);   // rotate about x axis by -90 deg.
-//
-//	// draws a hollow cylinder along the z axis with base on x-y axis, origin at (0, 0, 0) 
-//	pObj1 = gluNewQuadric();
-//	gluCylinder(pObj1, 30, 30, 40, 10, 10);
-//	// base radius 30  
-//	// top  radius 30 
-//	// height 40
-//	// 10 x 10 controls the sampling
-//
-//	// draw a solid disk to cover the base 
-//	pObj2 = gluNewQuadric();
-//	gluDisk(pObj2, 0, 30, 10, 10);
-//
-//	// draw a solid disk to cover the top
-//	glPushMatrix();
-//	glTranslatef(0, 0, 40);
-//	pObj3 = gluNewQuadric();
-//	gluDisk(pObj3, 0, 30, 10, 10);
-//	glPopMatrix();
-//
-//	glPopMatrix();
-//}
-//void draw_lower_arm(void)
-//{
-//	glPushMatrix();					// draw lower robotic arm : green box of dimension 15 x 70 x 15
-//	glColor3f(0.0, 1.0, 0.0);
-//	glScalef(7.5, 35.0, 7.5);
-//	cube();
-//	glPopMatrix();
-//}
-//
-//
-//void draw_upper_arm(void)
-//{
-//	glPushMatrix();					// draw upper robotic arm : yellow box of dimension 15 x 40 x 15
-//	glColor3f(1.0, 1.0, 0.0);
-//	glScalef(7.5, 20.0, 7.5);
-//	cube();
-//	glPopMatrix();
-//}
 
 void calculateplane(void)
 // calculate the parameters of the plane mesh
@@ -132,7 +78,7 @@ void draw_plane(unsigned char Image[IW][IH][4])
 	//glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SINGLE_COLOR);
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, ambientLight);
 	glPushMatrix();
-	glScalef(100, 0, 100);
+	glScalef(150, 0, 150);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -141,13 +87,6 @@ void draw_plane(unsigned char Image[IW][IH][4])
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 808, 627, 0, GL_RGBA, GL_UNSIGNED_BYTE, InputImage);
 	glEnable(GL_TEXTURE_2D);
 
-	//glBegin(GL_QUADS);
-	//glTexCoord2f(0, 1); glVertex3f(-1, 0, 1);					//leftup
-	//glTexCoord2f(1, 1); glVertex3f(1, 0, 1);       //rightup
-	//glTexCoord2f(1, 0); glVertex3f(1, 0, -1);                      //rightdown
-	//glTexCoord2f(0, 0); glVertex3f(-1, 0, -1);                               //leftdown
-	//glEnd();
-	
 	for (i = 0; i < K; i++)
 		for (j = 0; j < K; j++)
 		{
@@ -170,15 +109,13 @@ void ReadRawImage(unsigned char Image[][IH][4], int x)
 	char filename[50];
 	unsigned char temp;
 
-	//printf("Input filename (e.g. test.raw): ");
-	//scanf("%s", filename);
-	//printf("\n");
 
 	if (x == 1)
-		strcpy(filename, "f:\\ground3.raw");
+		strcpy(filename, "ground.raw");
 	else
-		strcpy(filename, "f:\\metal8.raw");
+		strcpy(filename, "metalskin.raw");
 
+	//printf("Error (ReadImage) : Cannot read the file!!\n");
 	if ((fp = fopen(filename, "rb")) == NULL)
 	{
 		printf("Error (ReadImage) : Cannot read the file!!\n");
@@ -201,17 +138,17 @@ void ReadRawImage(unsigned char Image[][IH][4], int x)
 
 }
 
+//draw body
 void draw_body(unsigned char Image[IW][IH][4])
 {
 	glPushMatrix();
 	glPushAttrib(GL_LIGHTING_BIT);
-	//glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, materialDiffuse);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpecular);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, materialDiffse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpecular);					//set material specular coeff
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, materialDiffse);		//set material diffuse & ambient coeff
 	//glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, materialEmission);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);				//set texture magnification function to linear
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);					//Sets the wrap parameter for texture coordinate to repeat
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glEnable(GL_TEXTURE_2D);
 	gluQuadricTexture(skin, GL_TRUE);
@@ -220,8 +157,6 @@ void draw_body(unsigned char Image[IW][IH][4])
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 808, 627, 0, GL_RGBA, GL_UNSIGNED_BYTE, Image);
 	gluSphere(skin, 1, 32, 32);
 	glDisable(GL_TEXTURE_2D);
-	//glutWireSphere(1, 10, 10);
-	//glutSolidSphere(1, 10, 10);
 	glPopAttrib();
 	glPopMatrix();
 }
@@ -231,7 +166,6 @@ void draw_head(unsigned char Image[IW][IH][4])
 	glPushMatrix();
 	glPushAttrib(GL_LIGHTING_BIT);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialSpecular);
-	//glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, materialEmission);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, materialDiffse);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -241,7 +175,6 @@ void draw_head(unsigned char Image[IW][IH][4])
 	gluQuadricTexture(skin, GL_TRUE);
 	glRotatef(-90, 1, 0, 0);
 	glScalef(1.2, 1.0, .9);
-	//glutWireSphere(1, 10, 10);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 808, 627, 0, GL_RGBA, GL_UNSIGNED_BYTE, Image);
 	gluSphere(skin, 1, 32, 32);
 	glDisable(GL_TEXTURE_2D);
@@ -280,7 +213,7 @@ void draw_ear(unsigned char Image[IW][IH][4])
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, materialDiffse);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 808, 627, 0, GL_RGBA, GL_UNSIGNED_BYTE, Image);
 	glRotatef(-90, 1, 0, 0);
-	glScalef(0.5, 0.5, 0.5);
+	glScalef(0.5, 0.5, 0.3);
 	gluSphere(skin, 1, 32, 32);
 	glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
@@ -323,13 +256,14 @@ void draw_leg(unsigned char Image[IW][IH][4])
 	glRotatef(-90, 1, 0, 0);
 	glScalef(0.6, 0.6, 1.9);
 	glTranslatef(0, 0, -.5);
-	gluSphere(skin, 1, 10, 10);
+	gluSphere(skin, 1, 32, 32);
 	glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 	glPopAttrib();
 }
 
-void walk(void)
+//glutIdle function: cal the walking motion angle 
+void walk(void)					
 {
 	static float da = 1.0;
 
@@ -341,14 +275,14 @@ void walk(void)
 	glutPostRedisplay();
 }
 
+
+//draw the bear model
 void draw_bear()
 {
 	
-	
-	
 	glPushMatrix();
 
-		glTranslatef(0, 4.2, 0);
+		glTranslatef(0, 4.1, 0);
 		draw_body(Skin);								//draw body
 		glPushMatrix();
 
@@ -357,12 +291,14 @@ void draw_bear()
 
 			glPushMatrix();								//store head
 				glTranslatef(.8, .6, 0);
+				glRotatef(-25, 0, 0, 1);
 				draw_ear(Skin);							//draw right ear
 			glPopMatrix();								//restore head
 
 			glPushMatrix();								//store head
 				glScalef(-1, 1, 1);
 				glTranslatef(.8, .6, 0);
+				glRotatef(-25, 0, 0, 1);
 				draw_ear(Skin);							//draw left ear
 			glPopMatrix();								//restore head
 			glPushAttrib(GL_CURRENT_BIT);
@@ -379,7 +315,7 @@ void draw_bear()
 		glPopAttrib();
 		glPushMatrix();									//store body with head and ears		
 			glTranslatef(-.5, 1.4, 0);
-			glRotatef(theta, 1, 0, 0);
+			glRotatef(theta, 1, 0, 0);					//arm walking motion, rotation with x axis
 			glRotated(135, 0, 0, 1);
 			draw_arm(Skin);								//draw right arm
 		glPopMatrix();									//restore body with left arm, head and ears
@@ -394,7 +330,7 @@ void draw_bear()
 
 		glPushMatrix();									//store body with head, ears, arms
 			glTranslatef(-1.1, -1.5, 0);
-			glRotatef(-theta, 1, 0, 0);
+			glRotatef(-theta, 1, 0, 0);					//leg walking motion, rotation with x axis
 			glRotatef(-12, 0, 0, 1);
 			draw_leg(Skin);								//draw left leg
 		glPopMatrix();									//restore body with left leg,head,ears,arms
@@ -453,6 +389,21 @@ void setLight()
 
 }
 
+
+void draw_shadow(GLfloat shadwoMat[])
+{
+	glDisable(GL_LIGHTING);
+	glPushMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glTranslatef(newLightPos[0], newLightPos[1], newLightPos[2]);			//reverse translate back to wc
+	glMultMatrixf(shadwoMat);												//perspective projection matrix on x-z plane
+	glTranslatef(-newLightPos[0], -newLightPos[1], -newLightPos[2]);		//translate to camera
+	glColor3f(.0, .0, .0);
+	draw_bear();
+	glEnable(GL_LIGHTING);
+	glPopMatrix();
+}
+
 void drawscene(void)
 {
 	//////////////////////////////////////////////////////////////////
@@ -461,7 +412,7 @@ void drawscene(void)
 	// 
 	GLint viewport[4];
 	GLfloat shadwoMat[16];
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 16; i++)									//cal perspective projection matrix on x-z plane
 	{
 		shadwoMat[i] = 0;
 		shadwoMat[0] = shadwoMat[5] = shadwoMat[10] = 1;
@@ -475,43 +426,24 @@ void drawscene(void)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(
-		0, 12, 50,   //eye
+		0, 35, 40,   //eye
 		0, 0, 0,   //center
 		0, 1, 0);  //up
 	glMultMatrixf(gsrc_getmo());  // get the rotation matrix from the rotation user-interface
 
-	//
-	/////////////////////////////////////////////////////////////////
-	/*  Enable Z buffer method for visibility determination. */
-	//  Z buffer code starts
-
-		// Clear display window.
-
 	setupRC();
 	//Lighting
 	setLight();
+
 	//Draw Floor
-
 	draw_plane(InputImage);
-
 	
 	glScalef(4.5, 4.5, 4.5);
 	//Draw Bear
 	draw_bear();
 
 	//Draw Shadow
-	glDisable(GL_LIGHTING);
-	glPushMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glTranslatef(newLightPos[0], newLightPos[1], newLightPos[2]);
-	glMultMatrixf(shadwoMat);
-	glTranslatef(-newLightPos[0], -newLightPos[1], -newLightPos[2]);
-	//glPushAttrib(GL_CURRENT_BIT);
-	glColor3f(.0, .0, .0);
-	draw_bear();
-	//glPopAttrib();
-	glEnable(GL_LIGHTING);
-	glPopMatrix();
+	draw_shadow(shadwoMat);
 
 	glutSwapBuffers();
 }
@@ -519,7 +451,7 @@ void drawscene(void)
 void main(int argc, char** argv)
 {
 	calculateplane();
-	ReadRawImage(InputImage, 1);
+	ReadRawImage(InputImage, 1);							//read texture raw file into buffer 
 	ReadRawImage(Skin, 0);
 	glutInit(&argc, argv);			                      // Initialize GLUT
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH); // Set display mode
@@ -532,19 +464,6 @@ void main(int argc, char** argv)
 
 	skin = gluNewQuadric();
 	theta = 0;
-	//phi = Front; psi = 0;
-	//printf("Type                                              \n");
-	//printf("0 : Initial position							   \n");
-	//printf("1 : Rotate only the upper arm by 30 deg           \n");
-	//printf("2 : Rotate the lower arm by 45 deg, then (1)      \n");
-	//printf("3 : Rotate the whole robot by 45 deg, then (2)    \n");
-	//printf("                                                  \n");
-	//printf("Try                                               \n");
-	//printf("Press 0 then 1                                    \n");
-	//printf("Press 0 then 2                                    \n");
-	//printf("Press 0 then 3                                    \n");
-	//printf("Observe the difference							   \n");
-	//glutKeyboardFunc(drawing);
 	//////////////////////////////////////////////////////////////////
 	// 
 	// Register mouse-click and mouse-move glut callback functions
